@@ -89,6 +89,7 @@ impl Triangle {
         if (0.0..=1.0).contains(&intersection.x)
             && (0.0..=1.0).contains(&intersection.y)
             && intersection.x + intersection.y <= 1.0
+            && range.contains(&WorldLength::new(ray_length))
         {
             Some(Hit {
                 point: todo!(),
