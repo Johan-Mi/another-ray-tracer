@@ -86,13 +86,14 @@ impl Triangle {
         let intersection =
             transformed_origin.xy() + transformed_direction.xy() * ray_length;
 
+        let ray_length = WorldLength::new(ray_length);
         if (0.0..=1.0).contains(&intersection.x)
             && (0.0..=1.0).contains(&intersection.y)
             && intersection.x + intersection.y <= 1.0
-            && range.contains(&WorldLength::new(ray_length))
+            && range.contains(&ray_length)
         {
             Some(Hit {
-                point: todo!(),
+                point: ray.at(ray_length),
                 normal: self.normal,
             })
         } else {
