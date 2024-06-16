@@ -3,9 +3,15 @@
 
 mod camera;
 use camera::Camera;
+mod ray;
+use ray::{Hit, Ray};
+mod triangle;
 
 enum ScreenSpace {}
 enum WorldSpace {}
+
+type WorldPoint = euclid::Point3D<f32, WorldSpace>;
+type WorldVector = euclid::Vector3D<f32, WorldSpace>;
 
 fn main() {
     let camera = Camera {
