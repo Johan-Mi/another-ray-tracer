@@ -1,11 +1,17 @@
-use crate::{ScreenSpace, WorldPoint, WorldSpace, WorldVector};
-use euclid::RigidTransform3D;
+use crate::{WorldLength, WorldPoint, WorldVector};
 
 pub struct Ray {
-    transform: RigidTransform3D<f32, ScreenSpace, WorldSpace>,
+    pub origin: WorldPoint,
+    pub direction: WorldVector,
+}
+
+impl Ray {
+    pub fn at(&self, length: WorldLength) -> WorldPoint {
+        self.origin + self.direction * length.get()
+    }
 }
 
 pub struct Hit {
-    point: WorldPoint,
-    normal: WorldVector,
+    pub point: WorldPoint,
+    pub normal: WorldVector,
 }
