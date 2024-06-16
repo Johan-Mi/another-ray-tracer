@@ -6,6 +6,7 @@ use camera::Camera;
 mod ray;
 use ray::{Hit, Ray};
 mod triangle;
+use triangle::Triangle;
 
 enum ScreenSpace {}
 enum WorldSpace {}

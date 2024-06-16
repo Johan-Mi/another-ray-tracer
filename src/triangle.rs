@@ -109,3 +109,23 @@ enum FreeVector {
     B,
     C,
 }
+
+#[cfg(test)]
+mod tests {
+    #[test]
+    fn it_works() {
+        use crate::{Ray, Triangle, WorldLength, WorldPoint, WorldVector};
+
+        let triangle = Triangle::new([
+            WorldPoint::new(1.0, -0.5, 00.5),
+            WorldPoint::new(1.0, 00.5, 00.0),
+            WorldPoint::new(1.0, -0.5, -0.5),
+        ]);
+        let ray = Ray {
+            origin: WorldPoint::zero(),
+            direction: WorldVector::new(1.0, 0.0, 0.0),
+        };
+        let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
+        assert!(triangle.hit(&ray, range).is_some());
+    }
+}
