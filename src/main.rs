@@ -10,6 +10,7 @@ mod triangle;
 enum ScreenSpace {}
 enum WorldSpace {}
 
+type WorldLength = euclid::Length<f32, WorldSpace>;
 type WorldPoint = euclid::Point3D<f32, WorldSpace>;
 type WorldVector = euclid::Vector3D<f32, WorldSpace>;
 

@@ -1,4 +1,5 @@
-use crate::{Hit, Ray, WorldPoint};
+use crate::{Hit, Ray, WorldLength, WorldPoint};
+use std::ops::Range;
 
 pub struct Triangle {
     vertices: [WorldPoint; 3],
@@ -9,7 +10,7 @@ impl Triangle {
         Self { vertices }
     }
 
-    pub fn hit(&self, ray: &Ray) -> Option<Hit> {
+    pub fn hit(&self, ray: &Ray, range: Range<WorldLength>) -> Option<Hit> {
         todo!()
     }
 }
