@@ -1,4 +1,4 @@
-use crate::{Camera, ScreenSize, Triangle};
+use crate::{Camera, ScreenPoint, ScreenSize, Triangle, WorldLength};
 use std::{
     fs::File,
     io::{self, BufWriter, Write},
@@ -19,8 +19,17 @@ pub fn render(
         "P6 {} {} 255",
         screen_size.width, screen_size.height
     )?;
-    for _ in 0..screen_size.area() {
-        writer.write_all(&[255, 0, 0])?;
+    for y in 0..screen_size.height {
+        for x in 0..screen_size.width {
+            let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
+            let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
+            let color = if triangle.hit(&ray, range).is_some() {
+                [0, 255, 0]
+            } else {
+                [255, 0, 0]
+            };
+            writer.write_all(&color)?;
+        }
     }
 
     Ok(())
