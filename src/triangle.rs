@@ -31,7 +31,7 @@ impl Triangle {
                 -vertices[1].to_vector().cross(vertices[0].to_vector()).x,
                 normal.y,
                 normal.z,
-                normal.dot(vertices[0].to_vector()),
+                -normal.dot(vertices[0].to_vector()),
             ]
             .map(|n| n / normal.x),
             free_vector: if normal_abs.y < normal_abs.x
