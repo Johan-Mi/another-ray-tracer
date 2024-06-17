@@ -121,11 +121,24 @@ mod tests {
             WorldPoint::new(1.0, -0.5, -0.5),
             WorldPoint::new(1.0, 00.5, 00.0),
         ]);
+        let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
+
         let ray = Ray {
             origin: WorldPoint::zero(),
             direction: WorldVector::new(1.0, 0.0, 0.0),
         };
-        let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
-        assert!(triangle.hit(&ray, range).is_some());
+        assert!(triangle.hit(&ray, range.clone()).is_some());
+
+        let ray = Ray {
+            origin: WorldPoint::zero(),
+            direction: WorldVector::new(-1.0, 0.0, 0.0),
+        };
+        assert!(triangle.hit(&ray, range.clone()).is_none());
+
+        let ray = Ray {
+            origin: WorldPoint::zero(),
+            direction: WorldVector::new(1.0, 4.0, 0.0).normalize(),
+        };
+        assert!(triangle.hit(&ray, range).is_none());
     }
 }
