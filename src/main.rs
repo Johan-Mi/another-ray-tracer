@@ -31,9 +31,9 @@ fn main() -> std::io::Result<()> {
     };
 
     let triangle = Triangle::new([
-        WorldPoint::new(1.0, -0.5, 00.5),
-        WorldPoint::new(1.0, 00.5, 00.0),
-        WorldPoint::new(1.0, -0.5, -0.5),
+        WorldPoint::new(-0.5, 00.5, 1.0),
+        WorldPoint::new(00.5, 00.0, 1.0),
+        WorldPoint::new(-0.5, -0.5, 1.0),
     ]);
 
     let screen_size = ScreenSize::new(480, 360);
