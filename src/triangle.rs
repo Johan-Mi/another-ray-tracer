@@ -1,15 +1,9 @@
-//! Doug Baldwin and Michael Weber, Fast Ray-Triangle Intersections by
-//! Coordinate Transformation, Journal of Computer Graphics Techniques
-//! (JCGT), vol. 5, no. 3, 39-49, 2016
-//! Available online <http://jcgt.org/published/0005/03/03/>
-
-use crate::{Hit, Ray, WorldLength, WorldPoint, WorldSpace, WorldVector};
+use crate::{Hit, Ray, WorldLength, WorldPoint, WorldVector};
 use std::ops::Range;
 
 pub struct Triangle {
+    vertices: [WorldPoint; 3],
     normal: WorldVector,
-    inverse_transformation: [f32; 9],
-    free_vector: FreeVector,
 }
 
 impl Triangle {
@@ -17,97 +11,45 @@ impl Triangle {
         let e1 = vertices[1] - vertices[0];
         let e2 = vertices[2] - vertices[0];
         let normal = e1.cross(e2).normalize();
-
-        let normal_abs = normal.abs();
-
-        Self {
-            normal,
-            inverse_transformation: [
-                e2.z,
-                -e2.y,
-                vertices[2].to_vector().cross(vertices[0].to_vector()).x,
-                -e1.z,
-                e1.y,
-                -vertices[1].to_vector().cross(vertices[0].to_vector()).x,
-                normal.y,
-                normal.z,
-                -normal.dot(vertices[0].to_vector()),
-            ]
-            .map(|n| n / normal.x),
-            free_vector: if normal_abs.y < normal_abs.x
-                && normal_abs.z < normal_abs.x
-            {
-                FreeVector::A
-            } else if normal_abs.x < normal_abs.y && normal_abs.z < normal_abs.y
-            {
-                FreeVector::B
-            } else {
-                FreeVector::C
-            },
-        }
+        Self { vertices, normal }
     }
 
     pub fn hit(&self, ray: &Ray, range: Range<WorldLength>) -> Option<Hit> {
-        let q = self.inverse_transformation;
-        let world_to_barycentric: euclid::Transform3D<
-            f32,
-            WorldSpace,
-            BarycentricSpace,
-        > = match self.free_vector {
-            #[rustfmt::skip]
-            FreeVector::A => euclid::Transform3D::new(
-                0.0, q[0], q[1], q[2],
-                0.0, q[3], q[4], q[5],
-                1.0, q[6], q[7], q[8],
-                0.0, 0.0,  0.0,  1.0,
-            ),
-            #[rustfmt::skip]
-            FreeVector::B => euclid::Transform3D::new(
-                q[0], 0.0, q[1], q[2],
-                q[3], 0.0, q[4], q[5],
-                q[6], 1.0, q[7], q[8],
-                0.0,  0.0, 0.0,  1.0,
-            ),
-            #[rustfmt::skip]
-            FreeVector::C => euclid::Transform3D::new(
-                q[0], q[1], 0.0, q[2],
-                q[3], q[4], 0.0, q[5],
-                q[6], q[7], 1.0, q[8],
-                0.0,  0.0,  0.0, 1.0,
-            ),
-        };
+        const EPSILON: f32 = 0.000_000_1;
 
-        let transformed_origin =
-            world_to_barycentric.transform_point3d(ray.origin).unwrap();
-        let transformed_direction =
-            world_to_barycentric.transform_vector3d(ray.direction);
-        let ray_length = -transformed_origin.z / transformed_direction.z;
+        let [v0, v1, v2] = self.vertices;
 
-        let intersection =
-            transformed_origin.xy() + transformed_direction.xy() * ray_length;
+        let edge_1 = v1 - v0;
+        let edge_2 = v2 - v0;
 
-        let ray_length = WorldLength::new(ray_length);
-        if (0.0..=1.0).contains(&intersection.x)
-            && (0.0..=1.0).contains(&intersection.y)
-            && intersection.x + intersection.y <= 1.0
-            && range.contains(&ray_length)
-        {
+        let dir_cross_e2 = ray.direction.cross(edge_2);
+        let a = edge_1.dot(dir_cross_e2);
+        if a.abs() < EPSILON {
+            return None;
+        }
+
+        let inv_a = 1.0 / a;
+        let offset = ray.origin - v0;
+        let u = inv_a * offset.dot(dir_cross_e2);
+        if !(0.0..=1.0).contains(&u) {
+            return None;
+        }
+        let s_cross_e1 = offset.cross(edge_1);
+        let v = inv_a * ray.direction.dot(s_cross_e1);
+        if v < 0.0 || u + v > 1.0 {
+            return None;
+        }
+
+        let t = WorldLength::new(inv_a * edge_2.dot(s_cross_e1));
+        if range.contains(&t) {
             Some(Hit {
-                point: ray.at(ray_length),
-                normal: -self.normal,
+                point: ray.at(t),
+                normal: self.normal,
             })
         } else {
             None
         }
     }
-}
-
-enum BarycentricSpace {}
-
-enum FreeVector {
-    A,
-    B,
-    C,
 }
 
 #[cfg(test)]
@@ -118,8 +60,8 @@ mod tests {
 
         let triangle = Triangle::new([
             WorldPoint::new(1.0, -0.5, 00.5),
-            WorldPoint::new(1.0, -0.5, -0.5),
             WorldPoint::new(1.0, 00.5, 00.0),
+            WorldPoint::new(1.0, -0.5, -0.5),
         ]);
         let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
 
