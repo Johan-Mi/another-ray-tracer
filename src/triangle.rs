@@ -94,7 +94,7 @@ impl Triangle {
         {
             Some(Hit {
                 point: ray.at(ray_length),
-                normal: self.normal,
+                normal: -self.normal,
             })
         } else {
             None
@@ -118,8 +118,8 @@ mod tests {
 
         let triangle = Triangle::new([
             WorldPoint::new(1.0, -0.5, 00.5),
-            WorldPoint::new(1.0, 00.5, 00.0),
             WorldPoint::new(1.0, -0.5, -0.5),
+            WorldPoint::new(1.0, 00.5, 00.0),
         ]);
         let ray = Ray {
             origin: WorldPoint::zero(),
