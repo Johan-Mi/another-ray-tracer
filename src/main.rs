@@ -14,6 +14,7 @@ use std::path::Path;
 enum ScreenSpace {}
 enum WorldSpace {}
 
+type ScreenPoint = euclid::Point2D<usize, ScreenSpace>;
 type ScreenSize = euclid::Size2D<usize, ScreenSpace>;
 type WorldLength = euclid::Length<f32, WorldSpace>;
 type WorldPoint = euclid::Point3D<f32, WorldSpace>;
