@@ -3,6 +3,7 @@
 
 mod camera;
 use camera::Camera;
+mod color;
 mod ray;
 use ray::{Hit, Ray};
 mod renderer;

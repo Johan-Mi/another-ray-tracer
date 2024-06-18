@@ -1,4 +1,4 @@
-use crate::{Camera, ScreenPoint, ScreenSize, Triangle, WorldLength};
+use crate::{color, Camera, ScreenPoint, ScreenSize, Triangle, WorldLength};
 use std::{
     fs::File,
     io::{self, BufWriter, Write},
@@ -14,6 +14,9 @@ pub fn render(
     let file = File::create(image_path)?;
     let mut writer = BufWriter::new(file);
 
+    let foreground = color::hdr_to_srgb(color::Hdr::new(0.0, 1.0, 0.0));
+    let background = color::hdr_to_srgb(color::Hdr::new(1.0, 0.0, 0.0));
+
     writeln!(
         writer,
         "P6 {} {} 255",
@@ -24,10 +27,11 @@ pub fn render(
             let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
             let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
             let color = if triangle.hit(&ray, range).is_some() {
-                [0, 255, 0]
+                foreground
             } else {
-                [255, 0, 0]
-            };
+                background
+            }
+            .to_array();
             writer.write_all(&color)?;
         }
     }
