@@ -2,6 +2,7 @@ use crate::{
     color, image::UvPoint, Camera, Hit, Image, Ray, ScreenPoint, ScreenSize,
     Triangle, WorldLength, WorldVector,
 };
+use euclid::Vector3D;
 use std::{
     fs::File,
     io::{self, BufWriter, Write},
@@ -26,7 +27,7 @@ pub fn render(
     for y in 0..screen_size.height {
         for x in 0..screen_size.width {
             let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
-            let color = color_of_ray(&ray, triangles, skybox);
+            let color = color_of_ray(&ray, triangles, skybox, 5);
             writer.write_all(&color::hdr_to_srgb(color).to_array())?;
         }
     }
@@ -38,8 +39,14 @@ fn color_of_ray(
     ray: &Ray,
     triangles: &[Triangle],
     skybox: &Image,
+    max_bounces: usize,
 ) -> color::Hdr {
-    let mut range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
+    if max_bounces == 0 {
+        return color::Hdr::zero();
+    }
+
+    let mut range =
+        WorldLength::new(0.000_000_1)..WorldLength::new(f32::INFINITY);
     let mut closest_hit = None::<Hit>;
     for triangle in triangles {
         let Some(hit) = triangle.hit(ray, range.clone()) else {
@@ -55,7 +62,14 @@ fn color_of_ray(
     }
 
     if let Some(hit) = closest_hit {
-        color::Hdr::new(0.0, 1.0, 0.0)
+        let reflected_ray = Ray {
+            origin: hit.point,
+            direction: ray.direction.reflect(hit.normal),
+        };
+        color_of_ray(&reflected_ray, triangles, skybox, max_bounces - 1)
+            .to_vector()
+            .component_mul(Vector3D::new(0.1, 1.0, 0.3))
+            .to_point()
     } else {
         sky(skybox, ray.direction)
     }

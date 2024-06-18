@@ -1,5 +1,6 @@
 #![forbid(unsafe_code)]
 #![warn(clippy::nursery, clippy::pedantic)]
+#![allow(clippy::option_if_let_else)]
 
 mod camera;
 use camera::Camera;
