@@ -18,8 +18,6 @@ pub fn render(
     let file = File::create(image_path)?;
     let mut writer = BufWriter::new(file);
 
-    let foreground = color::Hdr::new(0.0, 1.0, 0.0);
-
     writeln!(
         writer,
         "P6 {} {} 255",
@@ -28,20 +26,28 @@ pub fn render(
     for y in 0..screen_size.height {
         for x in 0..screen_size.width {
             let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
-            let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
-            let hit_something = triangles
-                .iter()
-                .any(|triangle| triangle.hit(&ray, range.clone()).is_some());
-            let color = if hit_something {
-                foreground
-            } else {
-                sky(skybox, ray.direction)
-            };
+            let color = color_of_ray(&ray, triangles, skybox);
             writer.write_all(&color::hdr_to_srgb(color).to_array())?;
         }
     }
 
     Ok(())
+}
+
+fn color_of_ray(
+    ray: &crate::ray::Ray,
+    triangles: &[Triangle],
+    skybox: &Image,
+) -> color::Hdr {
+    let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
+    let hit_something = triangles
+        .iter()
+        .any(|triangle| triangle.hit(ray, range.clone()).is_some());
+    if hit_something {
+        color::Hdr::new(0.0, 1.0, 0.0)
+    } else {
+        sky(skybox, ray.direction)
+    }
 }
 
 fn sky(skybox: &Image, direction: WorldVector) -> color::Hdr {
