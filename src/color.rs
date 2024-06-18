@@ -10,7 +10,5 @@ pub type Srgb = Point3D<u8, SrgbSpace>;
 
 pub fn hdr_to_srgb(color: Hdr) -> Srgb {
     // TODO: implement a proper tone mapping operator
-    (color.clamp(Point3D::zero(), Point3D::splat(1.0)) * 255.0)
-        .cast()
-        .cast_unit()
+    (color * 255.0).cast().cast_unit()
 }
