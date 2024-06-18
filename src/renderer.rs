@@ -1,4 +1,7 @@
-use crate::{color, Camera, ScreenPoint, ScreenSize, Triangle, WorldLength};
+use crate::{
+    color, image::UvPoint, Camera, Image, ScreenPoint, ScreenSize, Triangle,
+    WorldLength, WorldVector,
+};
 use std::{
     fs::File,
     io::{self, BufWriter, Write},
@@ -9,13 +12,13 @@ pub fn render(
     triangle: &Triangle,
     camera: &Camera,
     screen_size: ScreenSize,
+    skybox: &Image,
     image_path: &Path,
 ) -> io::Result<()> {
     let file = File::create(image_path)?;
     let mut writer = BufWriter::new(file);
 
-    let foreground = color::hdr_to_srgb(color::Hdr::new(0.0, 1.0, 0.0));
-    let background = color::hdr_to_srgb(color::Hdr::new(1.0, 0.0, 0.0));
+    let foreground = color::Hdr::new(0.0, 1.0, 0.0);
 
     writeln!(
         writer,
@@ -29,12 +32,18 @@ pub fn render(
             let color = if triangle.hit(&ray, range).is_some() {
                 foreground
             } else {
-                background
-            }
-            .to_array();
-            writer.write_all(&color)?;
+                sky(skybox, ray.direction)
+            };
+            writer.write_all(&color::hdr_to_srgb(color).to_array())?;
         }
     }
 
     Ok(())
+}
+
+fn sky(skybox: &Image, direction: WorldVector) -> color::Hdr {
+    let pitch = direction.y.mul_add(0.5, 0.5);
+    let yaw = direction.xz().angle_from_x_axis().positive().radians
+        / std::f32::consts::TAU;
+    color::srgb_to_hdr(skybox.sample_uv(UvPoint::new(yaw, pitch)))
 }

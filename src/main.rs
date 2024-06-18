@@ -4,6 +4,8 @@
 mod camera;
 use camera::Camera;
 mod color;
+mod image;
+use image::Image;
 mod ray;
 use ray::{Hit, Ray};
 mod renderer;
@@ -21,7 +23,7 @@ type WorldLength = euclid::Length<f32, WorldSpace>;
 type WorldPoint = euclid::Point3D<f32, WorldSpace>;
 type WorldVector = euclid::Vector3D<f32, WorldSpace>;
 
-fn main() -> std::io::Result<()> {
+fn main() -> Result<(), Box<dyn std::error::Error>> {
     let camera = Camera {
         transform: euclid::RigidTransform3D {
             rotation: euclid::Rotation3D::identity(),
@@ -39,5 +41,15 @@ fn main() -> std::io::Result<()> {
 
     let screen_size = ScreenSize::new(480, 360);
 
-    renderer::render(&triangle, &camera, screen_size, Path::new("image.ppm"))
+    let skybox = Image::open(Path::new("skybox.png"))?;
+
+    renderer::render(
+        &triangle,
+        &camera,
+        screen_size,
+        &skybox,
+        Path::new("image.ppm"),
+    )?;
+
+    Ok(())
 }
