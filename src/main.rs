@@ -44,7 +44,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let skybox = Image::open(Path::new("skybox.png"))?;
 
     renderer::render(
-        &triangle,
+        &[triangle],
         &camera,
         screen_size,
         &skybox,

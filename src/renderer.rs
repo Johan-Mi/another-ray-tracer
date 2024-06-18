@@ -9,7 +9,7 @@ use std::{
 };
 
 pub fn render(
-    triangle: &Triangle,
+    triangles: &[Triangle],
     camera: &Camera,
     screen_size: ScreenSize,
     skybox: &Image,
@@ -29,7 +29,10 @@ pub fn render(
         for x in 0..screen_size.width {
             let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
             let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
-            let color = if triangle.hit(&ray, range).is_some() {
+            let hit_something = triangles
+                .iter()
+                .any(|triangle| triangle.hit(&ray, range.clone()).is_some());
+            let color = if hit_something {
                 foreground
             } else {
                 sky(skybox, ray.direction)
