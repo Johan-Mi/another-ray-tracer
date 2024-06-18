@@ -12,6 +12,7 @@ impl Ray {
 }
 
 pub struct Hit {
+    pub ray_length: WorldLength,
     pub point: WorldPoint,
     pub normal: WorldVector,
 }

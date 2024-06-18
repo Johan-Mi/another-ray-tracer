@@ -1,6 +1,6 @@
 use crate::{
-    color, image::UvPoint, Camera, Image, ScreenPoint, ScreenSize, Triangle,
-    WorldLength, WorldVector,
+    color, image::UvPoint, Camera, Hit, Image, Ray, ScreenPoint, ScreenSize,
+    Triangle, WorldLength, WorldVector,
 };
 use std::{
     fs::File,
@@ -35,15 +35,26 @@ pub fn render(
 }
 
 fn color_of_ray(
-    ray: &crate::ray::Ray,
+    ray: &Ray,
     triangles: &[Triangle],
     skybox: &Image,
 ) -> color::Hdr {
-    let range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
-    let hit_something = triangles
-        .iter()
-        .any(|triangle| triangle.hit(ray, range.clone()).is_some());
-    if hit_something {
+    let mut range = WorldLength::new(0.0)..WorldLength::new(f32::INFINITY);
+    let mut closest_hit = None::<Hit>;
+    for triangle in triangles {
+        let Some(hit) = triangle.hit(ray, range.clone()) else {
+            continue;
+        };
+        if !closest_hit
+            .as_ref()
+            .is_some_and(|it| it.ray_length < hit.ray_length)
+        {
+            range.end = hit.ray_length;
+            closest_hit = Some(hit);
+        }
+    }
+
+    if let Some(hit) = closest_hit {
         color::Hdr::new(0.0, 1.0, 0.0)
     } else {
         sky(skybox, ray.direction)

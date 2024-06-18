@@ -43,6 +43,7 @@ impl Triangle {
         let t = WorldLength::new(inv_a * edge_2.dot(s_cross_e1));
         if range.contains(&t) {
             Some(Hit {
+                ray_length: t,
                 point: ray.at(t),
                 normal: self.normal,
             })
