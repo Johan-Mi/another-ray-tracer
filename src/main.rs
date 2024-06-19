@@ -6,6 +6,7 @@ mod camera;
 use camera::Camera;
 mod color;
 mod image;
+mod mesh;
 use image::Image;
 mod ray;
 use ray::{Hit, Ray};
@@ -34,21 +35,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         vertical_field_of_view: euclid::Angle::degrees(150.0),
     };
 
-    let triangle = Triangle::new([
-        WorldPoint::new(-0.5, 00.5, 1.0),
-        WorldPoint::new(00.5, 00.0, 1.0),
-        WorldPoint::new(-0.5, -0.5, 1.0),
-    ]);
-
-    let screen_size = ScreenSize::new(480, 360);
-
-    let skybox = Image::open(Path::new("skybox.png"))?;
-
     renderer::render(
-        &[triangle],
+        &mesh::load(Path::new("mesh.obj"))?,
         &camera,
-        screen_size,
-        &skybox,
+        ScreenSize::new(480, 360),
+        &Image::open(Path::new("skybox.png"))?,
         Path::new("image.ppm"),
     )?;
 

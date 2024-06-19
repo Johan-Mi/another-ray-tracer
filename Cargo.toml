@@ -7,4 +7,5 @@ edition = "2021"
 
 [dependencies]
 euclid = "0.22.10"
+obj = "0.10.2"
 png = "0.17.13"
