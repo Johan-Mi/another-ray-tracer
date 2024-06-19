@@ -13,7 +13,9 @@ pub fn load(path: &Path) -> Result<Vec<Triangle>, Box<dyn Error>> {
             let vertices = <[IndexTuple; 3]>::try_from(poly.0)
                 .map_err(|_| "mesh contains non-triangular polygons")?
                 .map(|vertex| mesh.position[vertex.0]);
-            Ok(Triangle::new(vertices.map(WorldPoint::from)))
+            Ok(Triangle::new(
+                vertices.map(|[x, y, z]| WorldPoint::new(x, -y, z)),
+            ))
         })
         .collect()
 }
