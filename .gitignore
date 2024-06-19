@@ -3,4 +3,5 @@
 *.png
 *.ply
 *.obj
+*.mtl
 *.ron
