@@ -2,7 +2,6 @@ use crate::{
     color, image::UvPoint, Camera, Hit, Image, Ray, ScreenPoint, ScreenSize,
     Triangle, WorldLength, WorldVector,
 };
-use euclid::Vector3D;
 use std::{
     fs::File,
     io::{self, BufWriter, Write},
@@ -12,6 +11,7 @@ use std::{
 pub fn render(
     triangles: &[Triangle],
     camera: &Camera,
+    mesh_color: color::Hdr,
     screen_size: ScreenSize,
     skybox: &Image,
     image_path: &Path,
@@ -32,7 +32,7 @@ pub fn render(
     for y in 0..screen_size.height {
         for x in 0..screen_size.width {
             let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
-            let color = color_of_ray(&ray, triangles, skybox, 5);
+            let color = color_of_ray(&ray, mesh_color, triangles, skybox, 5);
             writer.write_all(&color::hdr_to_srgb(color).to_array())?;
 
             #[allow(clippy::cast_precision_loss)]
@@ -57,6 +57,7 @@ pub fn render(
 
 fn color_of_ray(
     ray: &Ray,
+    mesh_color: color::Hdr,
     triangles: &[Triangle],
     skybox: &Image,
     max_bounces: usize,
@@ -86,10 +87,16 @@ fn color_of_ray(
             origin: hit.point,
             direction: ray.direction.reflect(hit.normal),
         };
-        color_of_ray(&reflected_ray, triangles, skybox, max_bounces - 1)
-            .to_vector()
-            .component_mul(Vector3D::new(0.1, 1.0, 0.3))
-            .to_point()
+        color_of_ray(
+            &reflected_ray,
+            mesh_color,
+            triangles,
+            skybox,
+            max_bounces - 1,
+        )
+        .to_vector()
+        .component_mul(mesh_color.to_vector())
+        .to_point()
     } else {
         sky(skybox, ray.direction)
     }

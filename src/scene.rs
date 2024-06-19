@@ -1,4 +1,4 @@
-use crate::{Camera, WorldPoint};
+use crate::{color, Camera, WorldPoint};
 use euclid::{RigidTransform3D, Rotation3D, Vector2D};
 use serde::Deserialize;
 
@@ -7,6 +7,7 @@ pub struct Scene {
     pub camera: Camera,
     pub skybox: String,
     pub mesh: String,
+    pub color: color::Hdr,
 }
 
 impl<'de> Deserialize<'de> for Camera {
