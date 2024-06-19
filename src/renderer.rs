@@ -2,10 +2,14 @@ use crate::{
     color, image::UvPoint, Camera, Hit, Image, Ray, ScreenPoint, ScreenSize,
     Triangle, WorldLength, WorldVector,
 };
+use rayon::iter::{
+    IndexedParallelIterator, IntoParallelIterator, ParallelIterator,
+};
 use std::{
     fs::File,
     io::{self, BufWriter, Write},
     path::Path,
+    sync::atomic::{AtomicUsize, Ordering},
 };
 
 pub fn render(
@@ -22,22 +26,24 @@ pub fn render(
     let print_stats = std::env::var_os("STATS").is_some();
     let start_time = std::time::Instant::now();
     let total_pixels = screen_size.area();
-    let mut rendered_pixels = 0;
+    let rendered_pixels = AtomicUsize::new(0);
 
-    writeln!(
-        writer,
-        "P6 {} {} 255",
-        screen_size.width, screen_size.height
-    )?;
-    for y in 0..screen_size.height {
-        for x in 0..screen_size.width {
+    let mut pixels = Vec::new();
+    (0..total_pixels)
+        .into_par_iter()
+        .map(|index| {
+            let y = index / screen_size.height;
+            let x = index % screen_size.height;
+
             let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
-            let color = color_of_ray(&ray, mesh_color, triangles, skybox, 5);
-            writer.write_all(&color::hdr_to_srgb(color).to_array())?;
+            let color = color::hdr_to_srgb(color_of_ray(
+                &ray, mesh_color, triangles, skybox, 5,
+            ));
 
             #[allow(clippy::cast_precision_loss)]
             if print_stats {
-                rendered_pixels += 1;
+                let rendered_pixels =
+                    rendered_pixels.fetch_add(1, Ordering::Relaxed);
                 if rendered_pixels % 10000 == 0 {
                     eprint!(
                         "\r{:02.3}%",
@@ -45,7 +51,18 @@ pub fn render(
                     );
                 }
             }
-        }
+
+            color
+        })
+        .collect_into_vec(&mut pixels);
+
+    writeln!(
+        writer,
+        "P6 {} {} 255",
+        screen_size.width, screen_size.height
+    )?;
+    for pixel in pixels {
+        writer.write_all(&pixel.to_array())?;
     }
 
     if print_stats {

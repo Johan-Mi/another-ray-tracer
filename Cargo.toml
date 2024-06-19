@@ -9,5 +9,6 @@ edition = "2021"
 euclid = { version = "0.22.10", features = ["serde"] }
 obj = "0.10.2"
 png = "0.17.13"
+rayon = "1.10.0"
 ron = "0.8.1"
 serde = { version = "1.0.203", features = ["derive"] }
