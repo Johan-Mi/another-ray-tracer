@@ -19,6 +19,11 @@ pub fn render(
     let file = File::create(image_path)?;
     let mut writer = BufWriter::new(file);
 
+    let print_stats = std::env::var_os("STATS").is_some();
+    let start_time = std::time::Instant::now();
+    let total_pixels = screen_size.area();
+    let mut rendered_pixels = 0;
+
     writeln!(
         writer,
         "P6 {} {} 255",
@@ -29,7 +34,22 @@ pub fn render(
             let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
             let color = color_of_ray(&ray, triangles, skybox, 5);
             writer.write_all(&color::hdr_to_srgb(color).to_array())?;
+
+            #[allow(clippy::cast_precision_loss)]
+            if print_stats {
+                rendered_pixels += 1;
+                if rendered_pixels % 10000 == 0 {
+                    eprint!(
+                        "\r{:02.3}%",
+                        rendered_pixels as f32 / total_pixels as f32 * 100.0
+                    );
+                }
+            }
         }
+    }
+
+    if print_stats {
+        println!("\nfinished rendering in {:?}", start_time.elapsed());
     }
 
     Ok(())
