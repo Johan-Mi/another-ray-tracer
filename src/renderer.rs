@@ -111,9 +111,7 @@ fn color_of_ray(
             skybox,
             max_bounces - 1,
         )
-        .to_vector()
-        .component_mul(mesh_color.to_vector())
-        .to_point()
+        .component_mul(mesh_color)
     } else {
         sky(skybox, ray.direction)
     }
