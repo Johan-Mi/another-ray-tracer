@@ -29,9 +29,9 @@ type WorldPoint = euclid::Point3D<f32, WorldSpace>;
 type WorldVector = euclid::Vector3D<f32, WorldSpace>;
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
+    let mut args = std::env::args().skip(1);
     let screen_size = ScreenSize::from(
-        std::env::args()
-            .nth(1)
+        args.next()
             .and_then(|arg| {
                 arg.split_once('x').and_then(|(width, height)| {
                     width.parse().ok().zip(height.parse().ok())
@@ -39,6 +39,8 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             })
             .unwrap_or((480, 360)),
     );
+    let samples_per_pixel =
+        args.next().and_then(|arg| arg.parse().ok()).unwrap_or(1);
 
     let scene =
         ron::from_str::<scene::Scene>(&std::fs::read_to_string("scene.ron")?)?;
@@ -48,6 +50,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
         &scene.camera,
         &scene.material,
         screen_size,
+        samples_per_pixel,
         &Image::open(Path::new(&scene.skybox))?,
         Path::new("image.ppm"),
     )?;

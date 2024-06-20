@@ -17,6 +17,7 @@ pub fn render(
     camera: &Camera,
     material: &Material,
     screen_size: ScreenSize,
+    samples_per_pixel: usize,
     skybox: &Image,
     image_path: &Path,
 ) -> io::Result<()> {
@@ -35,10 +36,16 @@ pub fn render(
             let y = index / screen_size.width;
             let x = index % screen_size.width;
 
-            let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
-            let color = color::hdr_to_srgb(color_of_ray(
-                &ray, material, triangles, skybox, 5,
-            ));
+            #[allow(clippy::cast_precision_loss)]
+            let color = std::iter::repeat_with(|| {
+                let ray =
+                    camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
+                color_of_ray(&ray, material, triangles, skybox, 5)
+            })
+            .take(samples_per_pixel)
+            .sum::<color::Hdr>()
+                / samples_per_pixel as f32;
+            let color = color::hdr_to_srgb(color);
 
             #[allow(clippy::cast_precision_loss)]
             if print_stats {
