@@ -1,6 +1,6 @@
 use crate::{
-    color, image::UvPoint, Camera, Hit, Image, Ray, ScreenPoint, ScreenSize,
-    Triangle, WorldLength, WorldVector,
+    color, image::UvPoint, Camera, Hit, Image, Material, Ray, ScreenPoint,
+    ScreenSize, Triangle, WorldLength, WorldVector,
 };
 use rayon::iter::{
     IndexedParallelIterator, IntoParallelIterator, ParallelIterator,
@@ -15,7 +15,7 @@ use std::{
 pub fn render(
     triangles: &[Triangle],
     camera: &Camera,
-    mesh_color: color::Hdr,
+    material: &Material,
     screen_size: ScreenSize,
     skybox: &Image,
     image_path: &Path,
@@ -37,7 +37,7 @@ pub fn render(
 
             let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
             let color = color::hdr_to_srgb(color_of_ray(
-                &ray, mesh_color, triangles, skybox, 5,
+                &ray, material, triangles, skybox, 5,
             ));
 
             #[allow(clippy::cast_precision_loss)]
@@ -74,7 +74,7 @@ pub fn render(
 
 fn color_of_ray(
     ray: &Ray,
-    mesh_color: color::Hdr,
+    material: &Material,
     triangles: &[Triangle],
     skybox: &Image,
     max_bounces: usize,
@@ -106,12 +106,12 @@ fn color_of_ray(
         };
         color_of_ray(
             &reflected_ray,
-            mesh_color,
+            material,
             triangles,
             skybox,
             max_bounces - 1,
         )
-        .component_mul(mesh_color)
+        .component_mul(material.albedo)
     } else {
         sky(skybox, ray.direction)
     }

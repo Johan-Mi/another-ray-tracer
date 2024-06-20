@@ -6,6 +6,8 @@ mod camera;
 use camera::Camera;
 mod color;
 mod image;
+mod material;
+use material::Material;
 mod mesh;
 use image::Image;
 mod ray;
@@ -44,7 +46,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     renderer::render(
         &mesh::load(Path::new(&scene.mesh))?,
         &scene.camera,
-        scene.color,
+        &scene.material,
         screen_size,
         &Image::open(Path::new(&scene.skybox))?,
         Path::new("image.ppm"),
