@@ -6,4 +6,5 @@ pub struct Material {
     pub albedo: color::Hdr,
     #[serde(default)]
     pub emissivity: color::Hdr,
+    pub roughness: f32,
 }

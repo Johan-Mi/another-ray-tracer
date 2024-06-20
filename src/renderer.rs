@@ -102,7 +102,14 @@ fn color_of_ray(
     if let Some(hit) = closest_hit {
         let reflected_ray = Ray {
             origin: hit.point,
-            direction: ray.direction.reflect(hit.normal),
+            direction: (ray.direction.reflect(hit.normal)
+                + (WorldVector::new(
+                    fastrand::f32(),
+                    fastrand::f32(),
+                    fastrand::f32(),
+                ) - WorldVector::splat(0.5))
+                    * material.roughness)
+                .normalize(),
         };
         material.emissivity
             + color_of_ray(
