@@ -32,8 +32,8 @@ pub fn render(
     (0..total_pixels)
         .into_par_iter()
         .map(|index| {
-            let y = index / screen_size.height;
-            let x = index % screen_size.height;
+            let y = index / screen_size.width;
+            let x = index % screen_size.width;
 
             let ray = camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
             let color = color::hdr_to_srgb(color_of_ray(
