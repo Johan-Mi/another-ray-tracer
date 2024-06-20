@@ -104,14 +104,15 @@ fn color_of_ray(
             origin: hit.point,
             direction: ray.direction.reflect(hit.normal),
         };
-        color_of_ray(
-            &reflected_ray,
-            material,
-            triangles,
-            skybox,
-            max_bounces - 1,
-        )
-        .component_mul(material.albedo)
+        material.emissivity
+            + color_of_ray(
+                &reflected_ray,
+                material,
+                triangles,
+                skybox,
+                max_bounces - 1,
+            )
+            .component_mul(material.albedo)
     } else {
         sky(skybox, ray.direction)
     }
