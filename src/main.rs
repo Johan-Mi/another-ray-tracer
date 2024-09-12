@@ -1,6 +1,7 @@
 #![forbid(unsafe_code)]
+#![deny(clippy::allow_attributes, clippy::allow_attributes_without_reason)]
 #![warn(clippy::nursery, clippy::pedantic)]
-#![allow(clippy::option_if_let_else)]
+#![expect(clippy::option_if_let_else, reason = "less readable")]
 
 mod camera;
 use camera::Camera;

@@ -36,7 +36,10 @@ pub fn render(
             let y = index / screen_size.width;
             let x = index % screen_size.width;
 
-            #[allow(clippy::cast_precision_loss)]
+            #[expect(
+                clippy::cast_precision_loss,
+                reason = "nobody renders with enough samples per pixel for this to matter"
+            )]
             let color = std::iter::repeat_with(|| {
                 let ray =
                     camera.ray_for_pixel(ScreenPoint::new(x, y), screen_size);
@@ -47,7 +50,10 @@ pub fn render(
                 / samples_per_pixel as f32;
             let color = color::hdr_to_srgb(color);
 
-            #[allow(clippy::cast_precision_loss)]
+            #[expect(
+                clippy::cast_precision_loss,
+                reason = "the progress percentage is only an estimation and doesn't need to be precise"
+            )]
             if print_stats {
                 let rendered_pixels =
                     rendered_pixels.fetch_add(1, Ordering::Relaxed);

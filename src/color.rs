@@ -10,7 +10,11 @@ pub type Srgb = Point3D<u8, SrgbSpace>;
 
 pub fn hdr_to_srgb(color: Hdr) -> Srgb {
     // TODO: implement a proper tone mapping operator
-    #[allow(clippy::cast_possible_truncation, clippy::cast_sign_loss)]
+    #[expect(
+        clippy::cast_possible_truncation,
+        clippy::cast_sign_loss,
+        reason = "this is a really naïve tone mapping operator and the cast does what it's supposed to do"
+    )]
     (color * 255.0)
         .map(|channel| channel as u8)
         .to_point()
