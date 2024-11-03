@@ -34,17 +34,14 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     let screen_size = ScreenSize::from(
         args.next()
             .and_then(|arg| {
-                arg.split_once('x').and_then(|(width, height)| {
-                    width.parse().ok().zip(height.parse().ok())
-                })
+                arg.split_once('x')
+                    .and_then(|(width, height)| width.parse().ok().zip(height.parse().ok()))
             })
             .unwrap_or((480, 360)),
     );
-    let samples_per_pixel =
-        args.next().and_then(|arg| arg.parse().ok()).unwrap_or(1);
+    let samples_per_pixel = args.next().and_then(|arg| arg.parse().ok()).unwrap_or(1);
 
-    let scene =
-        ron::from_str::<scene::Scene>(&std::fs::read_to_string("scene.ron")?)?;
+    let scene = ron::from_str::<scene::Scene>(&std::fs::read_to_string("scene.ron")?)?;
 
     renderer::render(
         &mesh::load(Path::new(&scene.mesh))?,

@@ -19,11 +19,7 @@ impl Image {
         let mut buf = vec![0; reader.output_buffer_size()];
         let info = reader.next_frame(&mut buf)?;
         if info.color_type != png::ColorType::Rgb {
-            return Err(format!(
-                "unsupported color type: {:?}",
-                info.color_type
-            )
-            .into());
+            return Err(format!("unsupported color type: {:?}", info.color_type).into());
         }
         let bytes = &buf[..info.buffer_size()];
         Ok(Self {

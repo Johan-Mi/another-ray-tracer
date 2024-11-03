@@ -1,10 +1,8 @@
 use crate::{
-    color, image::UvPoint, Camera, Hit, Image, Material, Ray, ScreenPoint,
-    ScreenSize, Triangle, WorldLength, WorldVector,
+    color, image::UvPoint, Camera, Hit, Image, Material, Ray, ScreenPoint, ScreenSize, Triangle,
+    WorldLength, WorldVector,
 };
-use rayon::iter::{
-    IndexedParallelIterator, IntoParallelIterator, ParallelIterator,
-};
+use rayon::iter::{IndexedParallelIterator, IntoParallelIterator, ParallelIterator};
 use std::{
     fs::File,
     io::{self, BufWriter, Write},
@@ -96,8 +94,7 @@ fn color_of_ray(
         return color::Hdr::zero();
     }
 
-    let mut range =
-        WorldLength::new(0.000_000_1)..WorldLength::new(f32::INFINITY);
+    let mut range = WorldLength::new(0.000_000_1)..WorldLength::new(f32::INFINITY);
     let mut closest_hit = None::<Hit>;
     for triangle in triangles {
         let Some(hit) = triangle.hit(ray, range.clone()) else {
@@ -116,23 +113,14 @@ fn color_of_ray(
         let reflected_ray = Ray {
             origin: hit.point,
             direction: (ray.direction.reflect(hit.normal)
-                + (WorldVector::new(
-                    fastrand::f32(),
-                    fastrand::f32(),
-                    fastrand::f32(),
-                ) - WorldVector::splat(0.5))
+                + (WorldVector::new(fastrand::f32(), fastrand::f32(), fastrand::f32())
+                    - WorldVector::splat(0.5))
                     * material.roughness)
                 .normalize(),
         };
         material.emissivity
-            + color_of_ray(
-                &reflected_ray,
-                material,
-                triangles,
-                skybox,
-                max_bounces - 1,
-            )
-            .component_mul(material.albedo)
+            + color_of_ray(&reflected_ray, material, triangles, skybox, max_bounces - 1)
+                .component_mul(material.albedo)
     } else {
         sky(skybox, ray.direction)
     }
@@ -140,7 +128,6 @@ fn color_of_ray(
 
 fn sky(skybox: &Image, direction: WorldVector) -> color::Hdr {
     let pitch = direction.y.mul_add(0.5, 0.5);
-    let yaw = direction.xz().angle_from_x_axis().positive().radians
-        / std::f32::consts::TAU;
+    let yaw = direction.xz().angle_from_x_axis().positive().radians / std::f32::consts::TAU;
     color::srgb_to_hdr(skybox.sample_uv(UvPoint::new(yaw, pitch)))
 }

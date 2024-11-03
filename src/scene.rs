@@ -29,11 +29,7 @@ impl<'de> Deserialize<'de> for Camera {
             let yaw = direction.xz().angle_to(forward);
             Self {
                 transform: RigidTransform3D {
-                    rotation: Rotation3D::euler(
-                        euclid::Angle::default(),
-                        pitch,
-                        yaw,
-                    ),
+                    rotation: Rotation3D::euler(euclid::Angle::default(), pitch, yaw),
                     translation: it.position.to_vector(),
                 },
                 vertical_field_of_view: it.vertical_field_of_view.into(),
