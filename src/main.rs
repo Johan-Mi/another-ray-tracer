@@ -1,5 +1,9 @@
 #![forbid(unsafe_code)]
-#![deny(clippy::allow_attributes, clippy::allow_attributes_without_reason)]
+#![deny(
+    clippy::allow_attributes,
+    clippy::allow_attributes_without_reason,
+    unused_results
+)]
 #![warn(clippy::nursery, clippy::pedantic)]
 #![expect(clippy::option_if_let_else, reason = "less readable")]
 
